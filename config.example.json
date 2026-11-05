@@ -4,5 +4,6 @@
   "tlsBackend": "rustls",
   "region": "us-east-1",
   "adminPsw": "sk-admin-your-secret-key",
+  "allowOpusOnFree": false,
   "clientTokenPassthrough": false
 }

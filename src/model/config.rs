@@ -155,6 +155,14 @@ pub struct Config {
     #[serde(default = "default_max_rpm_per_credential")]
     pub max_rpm_per_credential: u32,
 
+    /// 允许订阅等级为 FREE 的账号参与 Opus 模型调度
+    ///
+    /// 上游已对部分 Free 账号开放 Opus，但账号订阅标题仍为 `KIRO FREE`。
+    /// 默认 false 保持既有行为；设为 true 后不再按订阅标题排除这些账号，
+    /// 实际可用性交由模型探测结果与上游校验。需要重启生效。
+    #[serde(default)]
+    pub allow_opus_on_free: bool,
+
     /// `/v1/models` 动态列表缓存 TTL（秒），默认 3600
     #[serde(default = "default_model_cache_ttl_secs")]
     pub model_cache_ttl_secs: u64,
@@ -333,6 +341,7 @@ impl Default for Config {
             admin_psw: None,
             load_balancing_mode: default_load_balancing_mode(),
             max_rpm_per_credential: default_max_rpm_per_credential(),
+            allow_opus_on_free: false,
             model_cache_ttl_secs: default_model_cache_ttl_secs(),
             cache_simulation: CacheSimulationConfig::default(),
             client_token_passthrough: false,
@@ -404,6 +413,7 @@ impl Config {
     /// - `PROXY_USERNAME`: 代理用户名
     /// - `PROXY_PASSWORD`: 代理密码
     /// - `LOAD_BALANCING_MODE`: 负载均衡模式
+    /// - `ALLOW_OPUS_ON_FREE`: 允许 FREE 订阅账号参与 Opus 调度
     /// - `MODEL_CACHE_TTL_SECS`: /v1/models 动态列表缓存 TTL（秒）
     /// - `CLIENT_TOKEN_PASSTHROUGH`: 客户端 token 直通开关
     /// - `WRITE_CHUNKING_MAX_LINES`: 分块写入约束行数上限
@@ -443,6 +453,11 @@ impl Config {
         }
         if let Ok(v) = env::var("LOAD_BALANCING_MODE") {
             self.load_balancing_mode = v;
+        }
+        if let Ok(v) = env::var("ALLOW_OPUS_ON_FREE")
+            && let Ok(b) = v.parse::<bool>()
+        {
+            self.allow_opus_on_free = b;
         }
         if let Ok(v) = env::var("MODEL_CACHE_TTL_SECS")
             && let Ok(n) = v.parse::<u64>()
@@ -548,6 +563,17 @@ mod tests {
     fn test_model_cache_ttl_default() {
         let config = Config::default();
         assert_eq!(config.model_cache_ttl_secs, 3600);
+    }
+
+    #[test]
+    fn test_allow_opus_on_free_default_and_deserialize() {
+        assert!(!Config::default().allow_opus_on_free);
+
+        let config: Config = serde_json::from_str("{}").unwrap();
+        assert!(!config.allow_opus_on_free);
+
+        let config: Config = serde_json::from_str(r#"{"allowOpusOnFree":true}"#).unwrap();
+        assert!(config.allow_opus_on_free);
     }
 
     #[test]

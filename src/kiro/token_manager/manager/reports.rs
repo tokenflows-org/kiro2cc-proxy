@@ -401,14 +401,14 @@ impl MultiTokenManager {
         let model_mismatch = if is_opus {
             bound
                 .iter()
-                .filter(|e| !e.credentials.supports_opus())
+                .filter(|e| !self.credential_supports_opus(&e.credentials))
                 .count()
         } else {
             0
         };
         let in_scope: Vec<&CredentialEntry> = bound
             .iter()
-            .filter(|e| !is_opus || e.credentials.supports_opus())
+            .filter(|e| !is_opus || self.credential_supports_opus(&e.credentials))
             .copied()
             .collect();
         let total = in_scope.len();

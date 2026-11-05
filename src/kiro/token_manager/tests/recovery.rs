@@ -366,6 +366,37 @@ pub(crate) mod tests {
         );
     }
 
+    #[tokio::test]
+    async fn test_allow_opus_on_free_unlocks_free_account_for_opus() {
+        let mut free_cred = make_valid_cred("free1");
+        free_cred.subscription_title = Some("KIRO FREE".to_string());
+
+        let manager = MultiTokenManager::new(
+            Config::default(),
+            vec![free_cred.clone()],
+            None,
+            None,
+            false,
+        )
+        .unwrap();
+        assert!(
+            manager
+                .acquire_context(Some("claude-opus-5.5"))
+                .await
+                .is_err(),
+            "默认配置下 Free 账号不应参与 Opus 调度"
+        );
+
+        let mut config = Config::default();
+        config.allow_opus_on_free = true;
+        let manager = MultiTokenManager::new(config, vec![free_cred], None, None, false).unwrap();
+        let ctx = manager
+            .acquire_context(Some("claude-opus-5.5"))
+            .await
+            .expect("allowOpusOnFree=true 时 Free 账号应可用于 Opus");
+        assert_eq!(ctx.token, "free1");
+    }
+
     #[test]
     fn test_quota_disabled_reason_survives_restart() {
         // 回归：persist_credentials 会把 disabled=true 写回 credentials.json，

@@ -20,6 +20,13 @@ use std::time::Instant;
 use tokio::sync::Mutex as TokioMutex;
 
 impl MultiTokenManager {
+    /// Opus 调度是否允许该账号参与
+    ///
+    /// 默认沿用订阅等级判断；`allowOpusOnFree=true` 时不再按订阅标题排除 Free 账号。
+    pub(crate) fn credential_supports_opus(&self, credentials: &KiroCredentials) -> bool {
+        self.config.allow_opus_on_free || credentials.supports_opus()
+    }
+
     /// 创建多账号 Token 管理器
     ///
     /// # Arguments
@@ -286,7 +293,7 @@ impl MultiTokenManager {
                     return false;
                 }
                 // 如果是 opus 模型，需要检查订阅等级
-                if is_opus && !e.credentials.supports_opus() {
+                if is_opus && !self.credential_supports_opus(&e.credentials) {
                     return false;
                 }
                 true
@@ -398,7 +405,7 @@ impl MultiTokenManager {
                             e.id == current_id
                                 && !e.disabled
                                 && Self::compute_health(e) != HealthStatus::Unhealthy
-                                && (!is_opus || e.credentials.supports_opus())
+                                && (!is_opus || self.credential_supports_opus(&e.credentials))
                                 && !self.is_known_unsupported(e.id, model)
                         })
                         .map(|e| (e.id, e.credentials.clone()))
@@ -621,7 +628,7 @@ impl MultiTokenManager {
                                     HealthStatus::Unhealthy | HealthStatus::Disabled
                                 )
                                 && (allowed_ids.is_empty() || allowed_ids.contains(&e.id))
-                                && (!is_opus || e.credentials.supports_opus())
+                                && (!is_opus || self.credential_supports_opus(&e.credentials))
                                 && !self.is_known_unsupported(e.id, model)
                         })
                         .map(|e| (e.id, e.credentials.clone()))
