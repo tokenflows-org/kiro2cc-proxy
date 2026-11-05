@@ -67,20 +67,6 @@ const CURRENT_VERSION: &str = env!("CARGO_PKG_VERSION");
 pub fn build_release_notes() -> Vec<ReleaseNote> {
     let mut notes = vec![
         ReleaseNote {
-            version: "3.5.2".to_string(),
-            is_latest: false,
-            groups: vec![
-                feat_group(vec![Bilingual::new(
-                    "新增 allowOpusOnFree 开关（环境变量 ALLOW_OPUS_ON_FREE）：开启后订阅标题为 FREE 的账号也可参与 Opus 调度，默认关闭。能否实际使用 Opus 仍取决于上游账号权限",
-                    "Added the allowOpusOnFree switch (env ALLOW_OPUS_ON_FREE): when enabled, accounts whose subscription title is FREE can also be scheduled for Opus. Off by default. Whether Opus actually works still depends on the upstream account's access",
-                )]),
-                improve_group(vec![Bilingual::new(
-                    "上游返回空响应时的告警日志新增 model_id 与 credential_id，便于定位对特定模型无权限的账号",
-                    "The warning logged when the upstream returns an empty response now includes model_id and credential_id, making it easier to find an account that has no access to a given model",
-                )]),
-            ],
-        },
-        ReleaseNote {
             version: "3.5.1".to_string(),
             is_latest: false,
             groups: vec![
