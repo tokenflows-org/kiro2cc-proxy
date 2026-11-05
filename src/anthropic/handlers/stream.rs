@@ -432,6 +432,8 @@ fn create_sse_stream(
                             let final_events = if ctx.is_empty_response() {
                                 let oversized = ctx.empty_response_is_oversized_context();
                                 tracing::warn!(
+                                    model_id = %ctx.model,
+                                    credential_id = ?ctx.credential_id(),
                                     oversized_context = oversized,
                                     est_input_tokens = ctx.input_tokens,
                                     "流解码错误且无内容，补发 error 事件"
@@ -555,6 +557,8 @@ fn create_sse_stream(
                             if ctx.is_empty_response() {
                                 let oversized = ctx.empty_response_is_oversized_context();
                                 tracing::warn!(
+                                    model_id = %ctx.model,
+                                    credential_id = ?ctx.credential_id(),
                                     oversized_context = oversized,
                                     est_input_tokens = ctx.input_tokens,
                                     "上游返回空响应（无任何内容事件），补发 error 事件"

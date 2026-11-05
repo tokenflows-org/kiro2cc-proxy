@@ -264,6 +264,11 @@ impl StreamContext {
         self
     }
 
+    /// 本次请求实际选中的上游账号 ID（故障转移后的账号；未注入时为 None）。
+    pub fn credential_id(&self) -> Option<u64> {
+        self.credential_id
+    }
+
     /// 派生对客户端上报的 (non_cached_input, cache_creation, cache_read)。
     ///
     /// message_start 与末尾 message_delta 必须共用此逻辑：早前两者分别取
